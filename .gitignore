@@ -16,6 +16,19 @@
 /tools/bison/flex.stderr
 /tools/bison/cc.stderr
 
+# Web / Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+
 # Editor / OS noise
 .DS_Store
 Thumbs.db
