@@ -21,8 +21,8 @@ public:
     bool parse(std::ostream& trace);
 
 private:
-    const std::vector<Token>& tokens_;
-    const SLRTable&           table_;
+    std::vector<Token> tokens_;
+    const SLRTable&    table_;
     FirstFollow               firstFollow_;
     ErrorReporter&            reporter_;
     size_t                    position_ = 0;
