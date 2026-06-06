@@ -1,0 +1,94 @@
+# Original Grammar - Subset of Pascal (left recursion intact, for the LR Parser).
+# Source of truth: the assigned grammar (pascal_rules.txt), with two faithful
+# adjustments: (1) the operator token-classes addop/mulop/relop are written as
+# enumerating nonterminals so the lexer can emit one concrete terminal per
+# operator; (2) <program> ends with the mandatory terminating '.', as in standard
+# Pascal and Appendix A Fig A.1 ("end.") - pascal_rules.txt drops it, but the
+# textbook example program would not parse without it. See notes.md for the full
+# rationale and the BNF notation rules.
+#
+# Notation:
+#   <name>     nonterminal (an identifier wrapped in angle brackets)
+#   bare word  terminal (keyword, id, num, punctuation, or operator)
+#   |          separates alternatives
+#   epsilon    the empty string
+#   #          comment to end of line
+# The relational terminals < <= > >= <> are written bare; a token counts as a
+# nonterminal only when it is <...> wrapping an identifier, so <> and <= read as
+# terminals (see notes.md).
+
+<program> -> program id ( <identifier_list> ) ; <declarations> <subprogram_declarations> <compound_statement> .
+
+<identifier_list> -> id
+                   | <identifier_list> , id
+
+<declarations> -> <declarations> var <identifier_list> : <type> ;
+                | epsilon
+
+<type> -> <standard_type>
+        | array [ num .. num ] of <standard_type>
+
+<standard_type> -> integer
+                 | real
+
+<subprogram_declarations> -> <subprogram_declarations> <subprogram_declaration> ;
+                           | epsilon
+
+<subprogram_declaration> -> <subprogram_head> <declarations> <compound_statement>
+
+<subprogram_head> -> function id <arguments> : <standard_type> ;
+                   | procedure id <arguments> ;
+
+<arguments> -> ( <parameter_list> )
+             | epsilon
+
+<parameter_list> -> <identifier_list> : <type>
+                  | <parameter_list> ; <identifier_list> : <type>
+
+<compound_statement> -> begin <optional_statements> end
+
+<optional_statements> -> <statement_list>
+                       | epsilon
+
+<statement_list> -> <statement>
+                  | <statement_list> ; <statement>
+
+<statement> -> <variable> assignop <expression>
+             | <procedure_statement>
+             | <compound_statement>
+             | if <expression> then <statement> else <statement>
+             | while <expression> do <statement>
+
+<variable> -> id
+            | id [ <expression> ]
+
+<procedure_statement> -> id
+                       | id ( <expression_list> )
+
+<expression_list> -> <expression>
+                   | <expression_list> , <expression>
+
+<expression> -> <simple_expression>
+              | <simple_expression> <relop> <simple_expression>
+
+<simple_expression> -> <term>
+                     | <sign> <term>
+                     | <simple_expression> <addop> <term>
+
+<term> -> <factor>
+        | <term> <mulop> <factor>
+
+<factor> -> id
+          | id ( <expression_list> )
+          | num
+          | ( <expression> )
+          | not <factor>
+
+<sign> -> +
+        | -
+
+<addop> -> + | - | or
+
+<mulop> -> * | / | div | mod | and
+
+<relop> -> = | <> | < | <= | >= | >
