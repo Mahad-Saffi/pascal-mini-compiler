@@ -18,7 +18,7 @@ FILE ?= test/gcd.pas
 # Every bundled sample - fed to the harness and the output/ generator.
 SAMPLES := $(wildcard test/*.pas)
 
-.PHONY: all run web test outputs report-tables cross-check clean
+.PHONY: all run test outputs report-tables cross-check web web-install clean
 
 all: $(BIN)
 
@@ -35,12 +35,6 @@ $(BIN_DIR):
 # on FILE. Run the bare binary with no arguments for the interactive menu instead.
 run: $(BIN)
 	./$(BIN) all $(FILE)
-
-# Presentation UI: a local browser front end (tools/web) that shells out to the
-# binary for every stage and draws the AST as an interactive SVG tree. Needs only
-# python3 (standard library); open the printed http://127.0.0.1:8000 URL.
-web: $(BIN)
-	python3 tools/web/server.py
 
 # Cross-parser harness: run RDP, Predictive and LR over every sample and assert
 # they return the same accept/reject verdict.
@@ -66,6 +60,15 @@ cross-check: $(BIN)
 ORACLE_GEN := tools/bison/pascal.tab.c tools/bison/pascal.tab.h tools/bison/lex.yy.c \
               tools/bison/pascal_oracle tools/bison/bison.stderr \
               tools/bison/flex.stderr tools/bison/cc.stderr
+
+# Install npm dependencies for the web frontend.
+web-install:
+	cd web/frontend && npm install
+
+# Build the compiler, then launch FastAPI backend + Vite dev server.
+# Open http://localhost:5173 in a browser.
+web: $(BIN)
+	@cd web && bash start.sh
 
 clean:
 	$(RM) $(OBJS) $(DEPS) $(BIN) $(ORACLE_GEN)
